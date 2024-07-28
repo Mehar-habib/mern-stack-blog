@@ -48,7 +48,7 @@ function SignUp() {
     if (errorMessage) {
       const timer = setTimeout(() => {
         setErrorMessage(null);
-      }, 2000);
+      }, 5000);
 
       // Clear the timer if the component is unmounted or errorMessage changes
       return () => clearTimeout(timer);

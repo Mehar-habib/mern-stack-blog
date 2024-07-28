@@ -52,7 +52,7 @@ function SignIn() {
     if (errorMessage) {
       const timer = setTimeout(() => {
         dispatch(signInFailure(null));
-      }, 2000);
+      }, 5000);
 
       // Clear the timer if the component is unmounted or errorMessage changes
       return () => clearTimeout(timer);
