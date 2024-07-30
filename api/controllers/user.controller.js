@@ -69,4 +69,15 @@ const deleteAccount = asyncHandler(async (req, res) => {
   }
 });
 
-export { test, updateUser, deleteAccount };
+const signOutAccount = asyncHandler(async (req, res) => {
+  try {
+    res
+      .clearCookie("access_token")
+      .status(200)
+      .json(new ApiResponse(200, null, "Signed out successfully"));
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
+export { test, updateUser, deleteAccount, signOutAccount };
