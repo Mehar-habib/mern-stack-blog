@@ -9,64 +9,64 @@ const test = asyncHandler(async (req, res) => {
 });
 
 const updateUser = asyncHandler(async (req, res) => {
+  console.log(req);
   if (req.user.id !== req.params.userId) {
-    throw new ApiError(401, "you are not allowed to update this user");
+    throw new ApiError(403, "You are not allowed to update this user");
   }
-
-  // Check and hash password if provided
   if (req.body.password) {
     if (req.body.password.length < 6) {
-      throw new ApiError(400, "password must be at least 6 characters");
+      throw new ApiError(400, "Password must be at least 6 characters");
     }
     req.body.password = bcryptjs.hashSync(req.body.password, 10);
   }
-
-  // Validate and normalize username if provided
   if (req.body.username) {
-    if (req.body.username.length < 5 || req.body.username.length > 15) {
-      throw new ApiError(400, "username must be between 5 and 15 characters");
+    if (req.body.username.length < 7 || req.body.username.length > 20) {
+      throw new ApiError(400, "Username must be between 7 and 20 characters");
     }
     if (req.body.username.includes(" ")) {
-      throw new ApiError(400, "username must not contain any spaces");
+      throw new ApiError(400, "Username cannot contain spaces");
     }
-    if (!req.body.username.match(/^[a-zA-Z0-9]+$/)) {
-      throw new ApiError(400, "username must only contain letters and numbers");
-    }
-    if (
-      req.user.username &&
-      req.body.username !== req.user.username.toLowerCase()
-    ) {
+    if (req.body.username !== req.body.username.toLowerCase()) {
       throw new ApiError(400, "Username must be lowercase");
     }
+    if (!req.body.username.match(/^[a-zA-Z0-9]+$/)) {
+      throw new ApiError(400, "Username can only contain letters and numbers");
+    }
+    try {
+      const updatedUser = await User.findByIdAndUpdate(
+        req.params.userId,
+        {
+          $set: {
+            username: req.body.username,
+            email: req.body.email,
+            profilePicture: req.body.profilePicture,
+            password: req.body.password,
+          },
+        },
+        { new: true }
+      );
+      const { password, ...rest } = updatedUser._doc;
+      return res
+        .status(200)
+        .json(new ApiResponse(200, rest, "User updated successfully"));
+    } catch (error) {
+      throw new ApiError(500, error.message);
+    }
   }
+});
 
+const deleteAccount = asyncHandler(async (req, res) => {
+  if (req.user.id !== req.params.userId) {
+    throw new ApiError(403, "You are not allowed to delete this user");
+  }
   try {
-    // Filter out undefined values from the update object
-    const updateData = {
-      username: req.body.username,
-      password: req.body.password,
-      profilePicture: req.body.profilePicture,
-      email: req.body.email,
-    };
-
-    // Remove undefined keys
-    Object.keys(updateData).forEach(
-      (key) => updateData[key] === undefined && delete updateData[key]
-    );
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.userId,
-      { $set: updateData },
-      { new: true }
-    );
-
-    const { password, ...others } = updatedUser._doc;
+    await User.findByIdAndDelete(req.params.userId);
     return res
       .status(200)
-      .json(new ApiResponse(200, others, "User updated successfully"));
+      .json(new ApiResponse(200, null, "User deleted successfully"));
   } catch (error) {
     throw new ApiError(500, error.message);
   }
 });
 
-export { test, updateUser };
+export { test, updateUser, deleteAccount };
