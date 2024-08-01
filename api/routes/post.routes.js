@@ -1,10 +1,15 @@
 import { Router } from "express";
 import { verifyUserToken } from "../middlewares/verifyUser.js";
-import { createAdminPost, getPosts } from "../controllers/post.controller.js";
+import {
+  createAdminPost,
+  getPosts,
+  deletePost,
+} from "../controllers/post.controller.js";
 
 const router = Router();
 
 router.post("/create", verifyUserToken, createAdminPost);
 router.get("/get-posts", getPosts);
+router.delete("/delete-post/:postId/:userId", verifyUserToken, deletePost);
 
 export default router;

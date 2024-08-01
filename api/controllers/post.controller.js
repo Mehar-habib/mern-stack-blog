@@ -72,4 +72,19 @@ const getPosts = asyncHandler(async (req, res) => {
     throw new ApiError(500, error.message);
   }
 });
-export { createAdminPost, getPosts };
+
+const deletePost = asyncHandler(async (req, res) => {
+  if (!req.user.isAdmin || req.user.id !== req.params.userId) {
+    throw new ApiError(403, "You are not allowed to delete this post");
+  }
+  try {
+    await Post.findByIdAndDelete(req.params.postId);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, null, "Post deleted successfully"));
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
+export { createAdminPost, getPosts, deletePost };
