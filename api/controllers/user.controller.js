@@ -80,4 +80,43 @@ const signOutAccount = asyncHandler(async (req, res) => {
   }
 });
 
-export { test, updateUser, deleteAccount, signOutAccount };
+const getUsersByAdmin = asyncHandler(async (req, res) => {
+  if (!req.user.isAdmin) {
+    throw new ApiError(403, "You are not allowed to see all users");
+  }
+  try {
+    const startIndex = parseInt(req.query.startIndex) || 0;
+    const limit = parseInt(req.query.limit) || 9;
+    const sortDirection = req.query.sort === "asc" ? 1 : -1;
+
+    const users = await User.find()
+      .sort({ createdAt: sortDirection })
+      .skip(startIndex)
+      .limit(limit);
+    const userWithoutPassword = users.map((user) => {
+      const { password, ...rest } = user._doc;
+      return rest;
+    });
+
+    const totalUser = await User.countDocuments();
+    const now = new Date();
+    const oneMonthAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate()
+    );
+    const lastMonthUsers = await User.countDocuments({
+      createdAt: { $gte: oneMonthAgo },
+    });
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, { userWithoutPassword, totalUser, lastMonthUsers })
+      );
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
+export { test, updateUser, deleteAccount, signOutAccount, getUsersByAdmin };
