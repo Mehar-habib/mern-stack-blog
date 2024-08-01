@@ -9,7 +9,6 @@ const test = asyncHandler(async (req, res) => {
 });
 
 const updateUser = asyncHandler(async (req, res) => {
-  console.log(req);
   if (req.user.id !== req.params.userId) {
     throw new ApiError(403, "You are not allowed to update this user");
   }
@@ -109,11 +108,13 @@ const getUsersByAdmin = asyncHandler(async (req, res) => {
       createdAt: { $gte: oneMonthAgo },
     });
 
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(200, { userWithoutPassword, totalUser, lastMonthUsers })
-      );
+    return res.status(200).json(
+      new ApiResponse(200, {
+        users: userWithoutPassword,
+        totalUser,
+        lastMonthUsers,
+      })
+    );
   } catch (error) {
     throw new ApiError(500, error.message);
   }
