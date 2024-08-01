@@ -24,6 +24,7 @@ import { Link } from "react-router-dom";
 
 function DashProfile() {
   const { currentUser, error, loading } = useSelector((state) => state.user);
+  console.log(currentUser);
   const [imageFile, setImageFile] = useState(null);
   const [imageFileUrl, setImageFileUrl] = useState(null);
   const [imageFileUploadProgress, setImageFileUploadProgress] = useState(null);
@@ -115,13 +116,16 @@ function DashProfile() {
     }
     try {
       dispatch(updateStart());
-      const res = await fetch(`/api/user/update/${currentUser?._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        `/api/user/update/${currentUser?._id || currentUser?.data?._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
       const data = await res.json();
       if (!res.ok) {
         dispatch(updateFailure(data?.message));
@@ -204,7 +208,11 @@ function DashProfile() {
             />
           )}
           <img
-            src={imageFileUrl || currentUser?.profilePicture}
+            src={
+              imageFileUrl ||
+              currentUser?.profilePicture ||
+              currentUser?.data.profilePicture
+            }
             alt="profile"
             className={`rounded-full w-full h-full object-cover border-8 border-[lightgray] ${
               imageFileUploadProgress &&
@@ -220,14 +228,14 @@ function DashProfile() {
           type="text"
           id="username"
           placeholder="username"
-          defaultValue={currentUser?.username}
+          defaultValue={currentUser?.username || currentUser?.data.username}
           onChange={handleChange}
         />
         <TextInput
           type="email"
           id="email"
           placeholder="email"
-          defaultValue={currentUser?.email}
+          defaultValue={currentUser?.email || currentUser?.data.email}
           onChange={handleChange}
         />
         <TextInput
