@@ -87,4 +87,29 @@ const deletePost = asyncHandler(async (req, res) => {
   }
 });
 
-export { createAdminPost, getPosts, deletePost };
+const updatePost = asyncHandler(async (req, res) => {
+  if (!req.user.isAdmin || req.user.id !== req.params.userId) {
+    throw new ApiError(403, "You are not allowed to update this post");
+  }
+  try {
+    const updatedPost = await Post.findByIdAndUpdate(
+      req.params.postId,
+      {
+        $set: {
+          title: req.body.title,
+          content: req.body.content,
+          category: req.body.category,
+          image: req.body.image,
+        },
+      },
+      { new: true }
+    );
+    return res
+      .status(200)
+      .json(new ApiResponse(200, updatedPost, "Post updated successfully"));
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
+export { createAdminPost, getPosts, deletePost, updatePost };
