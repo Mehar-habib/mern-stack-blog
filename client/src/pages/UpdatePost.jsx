@@ -36,9 +36,11 @@ export default function UpdatePost() {
         } else {
           setPublishError(null);
           setFormData(data.data.posts[0]);
+          console.log("set form data", data.data.posts[0]);
         }
       };
       fetchPost();
+      console.log("form data ===========>>>>>>>>>", formData);
     } catch (error) {
       console.log(error.message);
     }
@@ -82,6 +84,15 @@ export default function UpdatePost() {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData._id) {
+      setPublishError("Post ID is missing or undefined.");
+      return;
+    }
+    if (!currentUser?._id) {
+      setPublishError("User ID is missing or undefined.");
+      return;
+    }
+
     try {
       const res = await fetch(
         `/api/post/update-post/${formData?._id}/${currentUser?._id}`,
