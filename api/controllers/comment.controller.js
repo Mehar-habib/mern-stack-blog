@@ -36,4 +36,25 @@ const getPostComments = asyncHandler(async (req, res) => {
   }
 });
 
-export { createComment, getPostComments };
+const likeComment = asyncHandler(async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) {
+      throw new ApiError(404, "comment not found!");
+    }
+    const userIndex = comment.likes.indexOf(req.user.id);
+    if (userIndex === -1) {
+      comment.numberOfLikes += 1;
+      comment.likes.push(req.user.id);
+    } else {
+      comment.numberOfLikes -= 1;
+      comment.likes.splice(userIndex, 1);
+    }
+    await comment.save();
+    return res.status(200).json(new ApiResponse(200, comment, "Done"));
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
+export { createComment, getPostComments, likeComment };
