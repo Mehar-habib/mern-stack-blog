@@ -23,4 +23,17 @@ const createComment = asyncHandler(async (req, res) => {
   }
 });
 
-export { createComment };
+const getPostComments = asyncHandler(async (req, res) => {
+  try {
+    const comments = await Comment.find({ postId: req.params.postId }).sort({
+      createdAt: -1,
+    });
+    return res
+      .status(200)
+      .json(new ApiResponse(200, comments, "fetch comments successfully!"));
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+
+export { createComment, getPostComments };

@@ -120,4 +120,23 @@ const getUsersByAdmin = asyncHandler(async (req, res) => {
   }
 });
 
-export { test, updateUser, deleteAccount, signOutAccount, getUsersByAdmin };
+const getUser = asyncHandler(async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) {
+      throw new ApiError(404, "User not Found");
+    }
+    const { password, ...rest } = user._doc;
+    return res.status(200).json(new ApiResponse(200, rest, "success"));
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+export {
+  test,
+  updateUser,
+  deleteAccount,
+  signOutAccount,
+  getUsersByAdmin,
+  getUser,
+};
