@@ -75,9 +75,33 @@ const editComment = asyncHandler(async (req, res) => {
     );
     res
       .status(200)
-      .json(new ApiResponse(200, editComment, "Edit Successfully!"));
+      .json(new ApiResponse(200, editedComment, "Edit Successfully!"));
   } catch (error) {
     throw new ApiError(500, error.message);
   }
 });
-export { createComment, getPostComments, likeComment, editComment };
+
+const deleteComment = asyncHandler(async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) {
+      throw new ApiError(404, "Comment not Found");
+    }
+    if (comment.userId !== req.user.id && !req.user.isAdmin) {
+      throw new ApiError(403, "you are not allowed to delete this comment");
+    }
+    await Comment.findByIdAndDelete(req.params.commentId);
+    return res
+      .status(200)
+      .json(new ApiResponse(200, null, "Delete Successfully!"));
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+export {
+  createComment,
+  getPostComments,
+  likeComment,
+  editComment,
+  deleteComment,
+};
