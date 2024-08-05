@@ -57,4 +57,27 @@ const likeComment = asyncHandler(async (req, res) => {
   }
 });
 
-export { createComment, getPostComments, likeComment };
+const editComment = asyncHandler(async (req, res) => {
+  try {
+    const comment = await Comment.findById(req.params.commentId);
+    if (!comment) {
+      throw new ApiError(404, "Comment not Found");
+    }
+    if (comment.userId !== req.user.id && !req.user.isAdmin) {
+      throw new ApiError(403, "you are not allowed to edit this comment");
+    }
+    const editedComment = await Comment.findByIdAndUpdate(
+      req.params.commentId,
+      {
+        content: req.body.content,
+      },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json(new ApiResponse(200, editComment, "Edit Successfully!"));
+  } catch (error) {
+    throw new ApiError(500, error.message);
+  }
+});
+export { createComment, getPostComments, likeComment, editComment };
